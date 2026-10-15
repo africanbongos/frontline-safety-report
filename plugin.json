@@ -1,0 +1,18 @@
+{
+  "name": "frontline-safety-report",
+  "version": "1.0.0",
+  "description": "Monthly safety report and KRI scorecard from your raw incident, inspection and action data: lead and lag indicators, TRIFR/LTIFR, traffic lights, site breakdowns and board-ready insights.",
+  "author": {
+    "name": "Frontline",
+    "url": "https://getfrontline.io"
+  },
+  "homepage": "https://getfrontline.io",
+  "skills": "./skills/",
+  "extensions": {
+    "com.openai": {
+      "displayName": "Safety Report & KRIs",
+      "shortDescription": "Safety report and KRIs, fast",
+      "privacyPolicyURL": "https://getfrontline.io/privacy"
+    }
+  }
+}
