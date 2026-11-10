@@ -14,13 +14,9 @@ You produce the monthly or quarterly safety report that a Head of Safety would b
 - `references/jurisdictions.md` - notifiable incident tests, timeframes and terminology for model WHS (NSW, QLD, SA, TAS, ACT, NT, WA, Cth), Victoria, NZ, US OSHA and UK RIDDOR. Read the section for the user's jurisdiction before saying anything about notifiability.
 - `references/industry-risks.md` - fatal risks, critical controls and lead indicators by industry. Use it to sanity check what the data says against what normally kills people in that industry.
 
-## Scripts (in this skill's `scripts/` folder)
+## Doing the data work
 
-- `incident_tools.py` - loads messy CSV/XLSX exports (finds the real header row, maps columns, parses mixed date formats, clusters site spelling variants, classifies events into FAI/MTI/RWI/LTI/Fatality/Near miss/Hazard, tags themes) and calculates rates by period and site in any convention. It also flags rows whose descriptions suggest serious or notifiable potential.
-- `charts.py` - consistent, clean PNG charts: trend with rolling line and target, Pareto, site hotspot bars.
-- `xlsx_builder.py` - `build_scorecard()` produces the Excel scorecard with live formulas, traffic lights and extra tabs.
-
-Add the scripts folder to `sys.path` and import them. They are a head start, not gospel: print what they inferred and correct anything wrong (especially the site map and event classes) before trusting the numbers.
+There are no bundled scripts. Do the data work yourself in Python in the session: pandas to read messy CSV/XLSX exports (find the real header row under any title rows, map columns, parse mixed date formats), matplotlib for charts in one clean consistent style, and openpyxl for Excel outputs with live formulas. Print what you inferred from the input (column mapping, site names, event classes) and correct it before trusting any numbers.
 
 ## Workflow
 
@@ -35,11 +31,11 @@ Audience changes the report:
 
 ### 2. Profile and clean the data (in code)
 
-Run `python scripts/incident_tools.py profile <file>` (use `--monthfirst` for US data). Check the column mapping, the site map, unparsed dates and event class counts. Fix the site map (e.g. abbreviations like "WP") and any class the keyword rules got wrong, then `clean`. Note duplicates and blanks. Keep a short list of data quality issues; they go in the report.
+Profile the file in Python (month-first dates for US data): find the header row, map columns, cluster site spelling variants and classify events into FAI/MTI/RWI/LTI/Fatality/Near miss/Hazard. Check the column mapping, the site map, unparsed dates and event class counts. Fix the site map (e.g. abbreviations like "WP") and any class the keyword rules got wrong, then clean the data. Note duplicates and blanks. Keep a short list of data quality issues; they go in the report.
 
 ### 3. Calculate (in code, never by hand)
 
-- Rates by month and by site, plus the period total and a rolling 12-month or year-to-date figure. Use `rates_table()` and `cumulative_rate()` with the convention for the jurisdiction (US: TRIR and DART per 200,000 hours).
+- Rates by month and by site, plus the period total and a rolling 12-month or year-to-date figure. Calculate them with the convention for the jurisdiction (US: TRIR and DART per 200,000 hours).
 - Lead indicators you can derive: near misses and hazards reported (and per recordable), actions closed on time %, overdue actions by owner and days overdue (as at today's date), inspections completed vs planned and critical control verifications if provided.
 - Compare against targets if the user gave them. Otherwise use direction of travel and say which rule you used for Green/Amber/Red.
 - Sense check: a single LTI at a small site can swing a monthly rate wildly. Say so when it happens.
@@ -47,7 +43,7 @@ Run `python scripts/incident_tools.py profile <file>` (use `--monthfirst` for US
 ### 4. Find what matters
 
 Work through the data the way a sharp Head of Safety would, not just the totals:
-- **Second look at serious events.** Run `flag_review_candidates()` and read every flagged row against `references/jurisdictions.md`. Identify anything that looks notifiable but has no record of notification, and anything logged as minor that describes a dangerous incident or high potential event. These go at the top.
+- **Second look at serious events.** Scan every event description for serious or notifiable potential and read each flagged row against `references/jurisdictions.md`. Identify anything that looks notifiable but has no record of notification, and anything logged as minor that describes a dangerous incident or high potential event. These go at the top.
 - **Severity over count.** What happens most (often manual handling, slips) versus what could kill someone (plant and pedestrians, falls, falling objects, energy, gas). Lead with the second.
 - **Trends and hotspots.** Rising patterns by site, area, shift, task, equipment; repeat events.
 - **Reporting health.** Falling near miss or hazard reporting with stable headcount is a warning sign, not good news.
@@ -55,8 +51,8 @@ Work through the data the way a sharp Head of Safety would, not just the totals:
 
 ### 5. Build the deliverables (if you can create files)
 
-1. `<Org>_Safety_Report_<Period>.xlsx` via `build_scorecard()`: KRI scorecard (lead first, then lag; this period, last period, target, status, what it means), plus tabs for site breakdown, incidents needing review, overdue actions, monthly rates and the cleaned data.
-2. Charts via `charts.py`: recordable rate trend with rolling line (and target if given), Pareto of incident themes, site comparison. Chart titles state the finding ("TRIFR down to 46.8 in Q3, still above target"), not just the metric.
+1. `<Org>_Safety_Report_<Period>.xlsx` built with openpyxl (live formulas and traffic-light formatting): KRI scorecard (lead first, then lag; this period, last period, target, status, what it means), plus tabs for site breakdown, incidents needing review, overdue actions, monthly rates and the cleaned data.
+2. Charts with matplotlib in one clean style: recordable rate trend with rolling line (and target if given), Pareto of incident themes, site comparison. Chart titles state the finding ("TRIFR down to 46.8 in Q3, still above target"), not just the metric.
 3. For a board or executive audience, also create a circulable document: a one-page board paper (board) or a 2-3 page report (exec) as .docx (python-docx) or PDF, using the same content. Decisions needed go on page one.
 
 Call `recalc()` on the workbook after saving. Look at each chart image before sharing it and check its title against the numbers. If one is cluttered or misleading, fix it.
